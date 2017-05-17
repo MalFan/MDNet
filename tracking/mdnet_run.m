@@ -1,4 +1,4 @@
-function [ result ] = mdnet_run(images, region, net, display)
+function [ result, fsa_seq_str, init_pos_examples, init_neg_examples, total_pos_examples, total_neg_examples ] = mdnet_run(images, region, net, display)
 % MDNET_RUN
 % Main interface for MDNet tracker
 %
@@ -14,12 +14,16 @@ function [ result ] = mdnet_run(images, region, net, display)
 % Hyeonseob Nam, 2015
 % 
 
+fsa_seq_str = '';
+
 if(nargin<4), display = true; end
 
 %% Initialization
+fsa_seq_str = strcat(fsa_seq_str, '1,init'); % Try something like: C(2,1) = cellstr('teststr')
+
 fprintf('Initialization...\n');
 
-nFrames = length(images);
+nFrames = length(images)
 
 img = imread(images{1});
 if(size(img,3)==1), img = cat(3,img,img,img); end
@@ -58,6 +62,9 @@ r = overlap_ratio(neg_examples,targetLoc);
 neg_examples = neg_examples(r<opts.negThr_init,:);
 neg_examples = neg_examples(randsample(end,min(opts.nNeg_init,end)),:);
 
+init_pos_examples = pos_examples;
+init_neg_examples = neg_examples;
+
 examples = [pos_examples; neg_examples];
 pos_idx = 1:size(pos_examples,1);
 neg_idx = (1:size(neg_examples,1)) + size(pos_examples,1);
@@ -91,16 +98,34 @@ end
 total_pos_data = cell(1,1,1,nFrames);
 total_neg_data = cell(1,1,1,nFrames);
 
+total_pos_examples = cell(nFrames,1);
+total_neg_examples = cell(nFrames,1);
+% sprintf('size of total_pos_examples:')
+% size(total_pos_examples)
+
+
 neg_examples = gen_samples('uniform', targetLoc, opts.nNeg_update*2, opts, 2, 5);
 r = overlap_ratio(neg_examples,targetLoc);
 neg_examples = neg_examples(r<opts.negThr_init,:);
 neg_examples = neg_examples(randsample(end,min(opts.nNeg_update,end)),:);
+% sprintf('size of pos_examples:')
+% size(pos_examples)
+
+% sprintf('size of neg_examples:')
+% size(neg_examples)
+
+total_pos_examples{1} = pos_examples;
+total_neg_examples{1} = neg_examples;
 
 examples = [pos_examples; neg_examples];
 pos_idx = 1:size(pos_examples,1);
 neg_idx = (1:size(neg_examples,1)) + size(pos_examples,1);
 
 feat_conv = mdnet_features_convX(net_conv, img, examples, opts);
+
+% sprintf('size of feat_conv:')
+% size(feat_conv)
+
 total_pos_data{1} = feat_conv(:,:,:,pos_idx);
 total_neg_data{1} = feat_conv(:,:,:,neg_idx);
 
@@ -110,6 +135,8 @@ scale_f = opts.scale_f;
 
 %% Main loop
 for To = 2:nFrames;
+    fsa_seq_str = strcat(fsa_seq_str, sprintf('\n%d,next', To));
+
     fprintf('Processing frame %d/%d... ', To, nFrames);
     
     img = imread(images{To});
@@ -134,8 +161,10 @@ for To = 2:nFrames;
     % extend search space in case of failure
     if(target_score<0)
         trans_f = min(1.5, 1.1*trans_f);
+        fsa_seq_str = strcat(fsa_seq_str, ',lost');
     else
         trans_f = opts.trans_f;
+        fsa_seq_str = strcat(fsa_seq_str, ',tracked');
     end
     
     % bbox regression
@@ -159,6 +188,9 @@ for To = 2:nFrames;
         neg_examples = neg_examples(r<opts.negThr_update,:);
         neg_examples = neg_examples(randsample(end,min(opts.nNeg_update,end)),:);
         
+        total_pos_examples{To} = pos_examples;
+        total_neg_examples{To} = neg_examples;
+
         examples = [pos_examples; neg_examples];
         pos_idx = 1:size(pos_examples,1);
         neg_idx = (1:size(neg_examples,1)) + size(pos_examples,1);
@@ -177,14 +209,19 @@ for To = 2:nFrames;
     else
         total_pos_data{To} = single([]);
         total_neg_data{To} = single([]);
+
+        % total_pos_examples{To} = single([]);
+        % total_neg_examples{To} = single([]);
     end
     
     %% Network update
     if((mod(To,opts.update_interval)==0 || target_score<0) && To~=nFrames)
         if (target_score<0) % short-term update
             pos_data = cell2mat(total_pos_data(success_frames(max(1,end-opts.nFrames_short+1):end)));
+            fsa_seq_str = strcat(fsa_seq_str, ',short_term_update');
         else % long-term update
             pos_data = cell2mat(total_pos_data(success_frames(max(1,end-opts.nFrames_long+1):end)));
+            fsa_seq_str = strcat(fsa_seq_str, ',long_term_update');
         end
         neg_data = cell2mat(total_neg_data(success_frames(max(1,end-opts.nFrames_short+1):end)));
         
@@ -209,3 +246,5 @@ for To = 2:nFrames;
         drawnow;
     end
 end
+
+fsa_seq_str = strcat(fsa_seq_str, '\n');

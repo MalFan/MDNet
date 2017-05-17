@@ -20,56 +20,62 @@ switch(dataset)
         % path to OTB dataset
         benchmarkSeqHome ='./dataset/OTB/';
         
-        % img path
-        switch(config.seqName)
-            case {'Jogging-1', 'Jogging-2'}
-                config.imgDir = fullfile(benchmarkSeqHome, 'Jogging', 'img');
-            case {'Skating2-1', 'Skating2-2'}
-                config.imgDir = fullfile(benchmarkSeqHome, 'Skating2', 'img');
-            otherwise
-                config.imgDir = fullfile(benchmarkSeqHome, config.seqName, 'img');
-        end
+        % % img path
+        % switch(config.seqName)
+        %     case {'Jogging-1', 'Jogging-2'}
+        %         config.imgDir = fullfile(benchmarkSeqHome, 'Jogging', 'img');
+        %     case {'Skating2-1', 'Skating2-2'}
+        %         config.imgDir = fullfile(benchmarkSeqHome, 'Skating2', 'img');
+        %     otherwise
+        %         config.imgDir = fullfile(benchmarkSeqHome, config.seqName, 'img');
+        % end
+    
+        config.imgDir = fullfile(benchmarkSeqHome, config.seqName, 'img');
         
         if(~exist(config.imgDir,'dir'))
             error('%s does not exist!!',config.imgDir);
         end
         
-        % parse img list
-        config.imgList = parseImg(config.imgDir);
-        switch(config.seqName)
-            case 'David'
-                config.imgList = config.imgList(300:end);
-            case 'Tiger1'
-                config.imgList = config.imgList(6:end);
-        end
+        % % parse img list
+        % config.imgList = parseImg(config.imgDir);
+        % switch(config.seqName)
+        %     case 'David'
+        %         config.imgList = config.imgList(300:end);
+        %     case 'Tiger1'
+        %         config.imgList = config.imgList(6:end);
+        % end
         
-        % load gt
-        switch(config.seqName)
-            case 'Jogging-1'
-                gtPath = fullfile(benchmarkSeqHome, 'Jogging', 'groundtruth_rect.1.txt');
-            case 'Jogging-2'
-                gtPath = fullfile(benchmarkSeqHome, 'Jogging', 'groundtruth_rect.2.txt');
-            case 'Skating2-1'
-                gtPath = fullfile(benchmarkSeqHome, 'Skating2', 'groundtruth_rect.1.txt');
-            case 'Skating2-2'
-                gtPath = fullfile(benchmarkSeqHome, 'Skating2', 'groundtruth_rect.2.txt');
-            case 'Human4'
-                gtPath = fullfile(benchmarkSeqHome, 'Human4', 'groundtruth_rect.2.txt');
-            otherwise
-                gtPath = fullfile(benchmarkSeqHome, config.seqName, 'groundtruth_rect.txt');
-        end
+        config.imgList = parseImg(config.imgDir);
+        
+        % % load gt
+        % switch(config.seqName)
+        %     case 'Jogging-1'
+        %         gtPath = fullfile(benchmarkSeqHome, 'Jogging', 'groundtruth_rect.1.txt');
+        %     case 'Jogging-2'
+        %         gtPath = fullfile(benchmarkSeqHome, 'Jogging', 'groundtruth_rect.2.txt');
+        %     case 'Skating2-1'
+        %         gtPath = fullfile(benchmarkSeqHome, 'Skating2', 'groundtruth_rect.1.txt');
+        %     case 'Skating2-2'
+        %         gtPath = fullfile(benchmarkSeqHome, 'Skating2', 'groundtruth_rect.2.txt');
+        %     case 'Human4'
+        %         gtPath = fullfile(benchmarkSeqHome, 'Human4', 'groundtruth_rect.2.txt');
+        %     otherwise
+        %         gtPath = fullfile(benchmarkSeqHome, config.seqName, 'groundtruth_rect.txt');
+        % end
+
+        gtPath = fullfile(benchmarkSeqHome, config.seqName, 'groundtruth_rect.txt');
         
         if(~exist(gtPath,'file'))
             error('%s does not exist!!',gtPath);
         end
         
         gt = importdata(gtPath);
-        switch(config.seqName)
-            case 'Tiger1'
-                gt = gt(6:end,:);
-            case {'Board','Twinnings'}
-                gt = gt(1:end-1,:);
-        end
+        % switch(config.seqName)
+        %     case 'Tiger1'
+        %         gt = gt(6:end,:);
+        %     case {'Board','Twinnings'}
+        %         gt = gt(1:end-1,:);
+        % end
         config.gt = gt;
         
         nFrames = min(length(config.imgList), size(config.gt,1));
