@@ -19,32 +19,34 @@ fclose(fileID);
 seqList = seqList{1};
 
 
-for i = 1:length(seqList)
-    seqName = seqList{i}
+% for i = 1:length(seqList)
+%     seqName = seqList{i}
 
-    conf = genConfig('otb', seqName);
-% conf = genConfig('vot2015','ball1');
+%     conf = genConfig('otb', seqName);
+% % conf = genConfig('vot2015','ball1');
 
-    switch(conf.dataset)
-        case 'otb'
-            net = fullfile('models','mdnet_vot-otb.mat');
-        case 'vot2014'
-            net = fullfile('models','mdnet_otb-vot14.mat');
-        case 'vot2015'
-            net = fullfile('models','mdnet_otb-vot15.mat');
-    end
+%     switch(conf.dataset)
+%         case 'otb'
+%             net = fullfile('models','mdnet_vot-otb.mat');
+%         case 'vot2014'
+%             net = fullfile('models','mdnet_otb-vot14.mat');
+%         case 'vot2015'
+%             net = fullfile('models','mdnet_otb-vot15.mat');
+%     end
 
-    [result, fsa_seq_str, ~, ~, ~, ~] = mdnet_run(conf.imgList, conf.gt(1,:), net);
+%     [result, fsa_seq_str, ~, ~, ~, ~] = mdnet_run(conf.imgList, conf.gt(1,:), net);
     
 
-    mkdir(fullfile('result', datasetName, seqName))
+%     mkdir(fullfile('result', datasetName, seqName))
 
-    csvwrite(fullfile('result', datasetName, seqName, sprintf('result_mdnet_%s.txt', seqName)), result)
+%     csvwrite(fullfile('result', datasetName, seqName, sprintf('result_mdnet_%s.txt', seqName)), result)
     
-    fileID = fopen(fullfile('result', datasetName, seqName, sprintf('fsa_seq_mdnet_%s.txt', seqName)),'w');
-    fprintf(fileID, fsa_seq_str);
-    fclose(fileID);    
+%     fileID = fopen(fullfile('result', datasetName, seqName, sprintf('fsa_seq_mdnet_%s.txt', seqName)),'w');
+%     fprintf(fileID, fsa_seq_str);
+%     fclose(fileID);    
 
-end
+% end
 
+
+close all;
 save_result_seq(datasetName);

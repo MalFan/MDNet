@@ -16,6 +16,74 @@ config.dataset = dataset;
 config.seqName = seqName;
 
 switch(dataset)
+    case {'92-2'}
+        % path to OTB dataset
+        benchmarkSeqHome ='./dataset/92-2/';
+        
+        % % img path
+        % switch(config.seqName)
+        %     case {'Jogging-1', 'Jogging-2'}
+        %         config.imgDir = fullfile(benchmarkSeqHome, 'Jogging', 'img');
+        %     case {'Skating2-1', 'Skating2-2'}
+        %         config.imgDir = fullfile(benchmarkSeqHome, 'Skating2', 'img');
+        %     otherwise
+        %         config.imgDir = fullfile(benchmarkSeqHome, config.seqName, 'img');
+        % end
+    
+        config.imgDir = fullfile(benchmarkSeqHome, config.seqName, 'img');
+        
+        if(~exist(config.imgDir,'dir'))
+            error('%s does not exist!!',config.imgDir);
+        end
+        
+        % parse img list
+        config.imgList = parseImg(config.imgDir);
+        
+        switch(config.seqName)
+            case '92-2-1'
+                config.imgList = config.imgList([1:46, 56:71, 85:144, 158:176, 202:223, 238:247, 254:287, 300:310, 319:end]);
+            case '92-2-4'
+                config.imgList = config.imgList([1:50, 59:172, 184:212, 236:248, 262:end]);
+        end
+        
+        
+        % % load gt
+        % switch(config.seqName)
+        %     case 'Jogging-1'
+        %         gtPath = fullfile(benchmarkSeqHome, 'Jogging', 'groundtruth_rect.1.txt');
+        %     case 'Jogging-2'
+        %         gtPath = fullfile(benchmarkSeqHome, 'Jogging', 'groundtruth_rect.2.txt');
+        %     case 'Skating2-1'
+        %         gtPath = fullfile(benchmarkSeqHome, 'Skating2', 'groundtruth_rect.1.txt');
+        %     case 'Skating2-2'
+        %         gtPath = fullfile(benchmarkSeqHome, 'Skating2', 'groundtruth_rect.2.txt');
+        %     case 'Human4'
+        %         gtPath = fullfile(benchmarkSeqHome, 'Human4', 'groundtruth_rect.2.txt');
+        %     otherwise
+        %         gtPath = fullfile(benchmarkSeqHome, config.seqName, 'groundtruth_rect.txt');
+        % end
+
+        gtPath = fullfile(benchmarkSeqHome, config.seqName, 'groundtruth_rect.txt');
+        
+        if(~exist(gtPath,'file'))
+            error('%s does not exist!!',gtPath);
+        end
+        
+        gt = importdata(gtPath);
+        switch(config.seqName)
+            case '92-2-1'
+                gt = gt([1:46, 56:71, 85:144, 158:176, 202:223, 238:247, 254:287, 300:310, 319:end],:);
+            case '92-2-4'
+                gt = gt([1:50, 59:172, 184:212, 236:248, 262:end],:);
+        end
+        config.gt = gt;
+
+        assert(size(gt, 1) == length(config.imgList))
+        
+        nFrames = min(length(config.imgList), size(config.gt,1));
+        config.imgList = config.imgList(1:nFrames);
+        config.gt = config.gt(1:nFrames,:);
+        
     case {'otb'}
         % path to OTB dataset
         benchmarkSeqHome ='./dataset/OTB/';
