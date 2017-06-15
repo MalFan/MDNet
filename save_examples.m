@@ -3,7 +3,7 @@ function [] = save_examples( images, datasetName, seqName, init_pos_examples, in
     mkdir(fullfile('result', datasetName, seqName, 'init_neg_examples'));
     
     csvwrite(fullfile('result', datasetName, seqName, 'init_pos_examples.txt'), init_pos_examples)
-    csvwrite(fullfile('result', datasetName, seqName, 'init_neg_examples.txt'), init_neg_examples)
+    % csvwrite(fullfile('result', datasetName, seqName, 'init_neg_examples.txt'), init_neg_examples)
 
 
     % img = imread(images{1});
@@ -34,7 +34,7 @@ function [] = save_examples( images, datasetName, seqName, init_pos_examples, in
         mkdir(fullfile('result', datasetName, seqName, 'cur_neg_examples', sprintf('%d', To)));
 
         csvwrite(fullfile('result', datasetName, seqName, 'cur_pos_examples', sprintf('%d.txt', To)), total_pos_examples{To})
-        csvwrite(fullfile('result', datasetName, seqName, 'cur_neg_examples', sprintf('%d.txt', To)), total_neg_examples{To})
+        % csvwrite(fullfile('result', datasetName, seqName, 'cur_neg_examples', sprintf('%d.txt', To)), total_neg_examples{To})
 
         % img = imread(images{To});
         % if(size(img,3)==1), img = cat(3,img,img,img); end
